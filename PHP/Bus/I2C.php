@@ -2,6 +2,8 @@
 
 namespace TASoft\Bus;
 
+use RuntimeException;
+
 /**
  * Class I2C wraps the functions i2c_* into a class
  * @package TASoft\Bus
@@ -22,7 +24,7 @@ class I2C
 		if($this->deviceStream)
 			i2c_select($this->deviceStream, $address);
 		if(!$this->deviceStream)
-			throw new \RuntimeException("Could not open i2c bus");
+			throw new RuntimeException("Could not open i2c bus");
 	}
 
 	/**
@@ -42,6 +44,11 @@ class I2C
 		$this->close();
 	}
 
+	protected function checkDev() {
+		if(!$this->deviceStream)
+			throw new RuntimeException("Can not read/write to i2c bus. Probably closed or not opened correctly");
+	}
+
 	/**
 	 * Reads a specific length of bytes from bus
 	 *
@@ -49,6 +56,7 @@ class I2C
 	 * @return array
 	 */
 	public function read($length) {
+		$this->checkDev();
 		return i2c_read($this->deviceStream, $length);
 	}
 
@@ -58,6 +66,7 @@ class I2C
 	 * @return int
 	 */
 	public function readByte() {
+		$this->checkDev();
 		return i2c_read($this->deviceStream, 1) [0] ?? 0;
 	}
 
@@ -67,6 +76,7 @@ class I2C
 	 * @return int
 	 */
 	public function read2Bytes() {
+		$this->checkDev();
 		@ list($b1, $b2) = i2c_read($this->deviceStream, 2);
 		return ($b1 << 8) | $b2;
 	}
@@ -77,21 +87,21 @@ class I2C
 	 * @return int
 	 */
 	public function read4Bytes() {
+		$this->checkDev();
 		@ list($b1, $b2, $b3, $b4) = i2c_read($this->deviceStream, 4);
 		return ($b1 << 24) | ($b2 << 16) | ($b3 << 8) | $b4;
 	}
 
 	/**
 	 * Writes all bytes from an array into the specified register on the connected chip.
-	 * If $waitForCompletion is true, it will wait for completion (as soon the register is set to 0x80)
 	 *
 	 * @param int $register
 	 * @param array $bytes
-	 * @param bool $waitForCompletion
 	 * @return bool
 	 */
-	public function write(int $register, array $bytes, bool $waitForCompletion = true) {
-		return i2c_write($this->deviceStream, $register, $bytes, $waitForCompletion);
+	public function write(int $register, array $bytes) {
+		$this->checkDev();
+		return i2c_write($this->deviceStream, $register, $bytes);
 	}
 
 	/**
@@ -101,7 +111,7 @@ class I2C
 	 * @return bool
 	 */
 	public function writeRegister(int $register) {
-		return i2c_write($this->deviceStream, $register, [], false);
+		return i2c_write($this->deviceStream, $register);
 	}
 
 	/**
@@ -109,11 +119,10 @@ class I2C
 	 *
 	 * @param int $register
 	 * @param int $bit16
-	 * @param bool $waitForCompletion
 	 * @return bool
 	 */
-	public function write16(int $register, int $bit16, bool $waitForCompletion = true) {
-		return i2c_write($this->deviceStream, $register, [($bit16>>8) & 0xFF, $bit16 & 0xFF], $waitForCompletion);
+	public function write16(int $register, int $bit16) {
+		return i2c_write($this->deviceStream, $register, [($bit16>>8) & 0xFF, $bit16 & 0xFF]);
 	}
 
 	/**
@@ -121,10 +130,9 @@ class I2C
 	 *
 	 * @param int $register
 	 * @param int $bit32
-	 * @param bool $waitForCompletion
 	 * @return bool
 	 */
-	public function write32(int $register, int $bit32, bool $waitForCompletion = true) {
-		return i2c_write($this->deviceStream, $register, [($bit32>>24) & 0xFF, ($bit32>>16) & 0xFF, ($bit32>>8) & 0xFF, $bit32 & 0xFF], $waitForCompletion);
+	public function write32(int $register, int $bit32) {
+		return i2c_write($this->deviceStream, $register, [($bit32>>24) & 0xFF, ($bit32>>16) & 0xFF, ($bit32>>8) & 0xFF, $bit32 & 0xFF]);
 	}
 }
