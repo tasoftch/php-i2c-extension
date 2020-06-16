@@ -150,67 +150,58 @@ PHP_FUNCTION(i2c_read) {
 
 
 PHP_FUNCTION(i2c_write) {
-    zval *rval, *bytes;
+    zval *rval, *bytes = NULL;
 	long reg_id;
-	int waitForComplete = 0;
+	HashTable *arr_hash;
+	int array_count;
 
-
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rla|b", &rval, &reg_id, &bytes, &waitForComplete) != SUCCESS) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl|a", &rval, &reg_id, &bytes) != SUCCESS) {
 	   RETURN_BOOL(0);
 	}
 	zend_resource *resource = Z_REF_P(rval);
 	struct i2c_bus fd = *((struct i2c_bus *)resource->ptr);
 
-	if(reg_id < 0 || reg_id > 255) {
-		zend_error(E_WARNING, "I2C register must be an integer value between 0 and 255");
-        RETURN_BOOL(0);
+	if(fd.state < 2) {
+		zend_error(E_WARNING, "Device did not yet select an address on i2c bus");
+		RETURN_FALSE;
 	}
 
-	HashTable *arr_hash;
-	HashPosition pointer;
-	int array_count;
+	if(reg_id < 0 || reg_id > 255) {
+		zend_error(E_WARNING, "I2C register must be an integer value between 0 and 255");
+        RETURN_FALSE;
+	}
 
-	arr_hash = Z_ARRVAL_P(bytes);
-	array_count = zend_hash_num_elements(arr_hash);
+	if(bytes) {
+		arr_hash = Z_ARRVAL_P(bytes);
+		array_count = zend_hash_num_elements(arr_hash);
+	} else
+		array_count = 0;
 
-	uint8_t buffer[array_count+2];
-	int bufCount = 0;
-	buffer[bufCount++] = reg_id;
+	uint8_t buffer[array_count+1];
+    int bufCount = 0;
+    buffer[bufCount++] = reg_id;
 
-	for(int idx = 0;idx < array_count;idx++) {
-		zval *data = data = zend_hash_index_find(arr_hash, idx);
-		if (Z_TYPE_P(data) == IS_LONG) {
-			long value = Z_LVAL_P(data);
-			if(value >= 0 && value <=255) {
-				buffer[bufCount++] = value;
+	if(bytes) {
+		for(int idx = 0;idx < array_count;idx++) {
+			zval *data = data = zend_hash_index_find(arr_hash, idx);
+			if (Z_TYPE_P(data) == IS_LONG) {
+				long value = Z_LVAL_P(data);
+				if(value >= 0 && value <=255) {
+					buffer[bufCount++] = value;
+				} else {
+					zend_error(E_WARNING, "i2c_write expects an array containing integer values between 0 and 255");
+					RETURN_BOOL(0);
+				}
 			} else {
 				zend_error(E_WARNING, "i2c_write expects an array containing integer values between 0 and 255");
 				RETURN_BOOL(0);
 			}
-		} else {
-			zend_error(E_WARNING, "i2c_write expects an array containing integer values between 0 and 255");
-			RETURN_BOOL(0);
 		}
 	}
-
-   if(fd.state < 2) {
-           	zend_error(E_WARNING, "Device did not yet select an address on i2c bus");
-   			RETURN_BOOL(0);
-           }
 
     if(write(fd.fd, buffer, bufCount) != bufCount) {
     	zend_error(E_WARNING, "Could not write to i2c bus");
         RETURN_BOOL(0);
-    }
-
-    if(waitForComplete) {
-    	do {
-              if (read(fd.fd, buffer, 2) != 2)
-                {
-                zend_error(E_WARNING, "Could not read from i2c bus for completion");
-                RETURN_FALSE;
-                }
-              } while (!(buffer[0] & 0x80));
     }
 
     RETURN_TRUE;

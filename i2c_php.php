@@ -31,17 +31,17 @@ function i2c_select($device, $address) {}
  *
  * @param resource $device
  * @param int $length
- * @return string
+ * @return array
  */
 function i2c_read($device, $length) {}
 
 /**
  * Writes the $bytes into the register.
- *	If the parameter $wait is set, the function waits until the register is set to 0x80 (transaction completed)
+ * If no bytes are specified, it just writes the register.
  *
  * @param resource $device
  * @param int $register
- * @param bool $wait
- * @param array $bytes
+ * @param array|null $bytes
+ * @return bool
  */
-function i2c_write($device, $register, array $bytes, bool $wait = false) {}
+function i2c_write($device, $register, array $bytes = NULL) {}

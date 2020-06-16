@@ -1,0 +1,19 @@
+{
+  "name": "tasoft/php-i2c-extension",
+  "description": "A simple I2C extension for PHP to read from and write to i2c bus.",
+  "license": "MIT",
+  "authors": [
+	{
+	  "name": "thomas",
+	  "email": "thomas@tasoft.ch"
+	}
+  ],
+  "require": {
+	"php" : "^7.2"
+  },
+  "autoload": {
+	"psr-4": {
+	  "TASoft\\" : "PHP"
+	}
+  }
+}
