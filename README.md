@@ -47,8 +47,10 @@ i2c_select($fd, 0x48);
 
 for($e=0;$e<30;$e++) {
     // Read for 30 times the value between channel AIN_0 and GND, 4.096 V, 128 samples/s
-    i2c_write($fd, 1, [0xc3, 0x85], true);
-    i2c_write($fd, 0, []);
+    i2c_write($fd, 1, [0xc3, 0x85]);
+    // Wait for conversion completed
+    usleep(9000);
+    i2c_write($fd, 0);
     $data = i2c_read($fd, 2);
     
     $value = $data[0]*256 + $data[1];
@@ -63,3 +65,29 @@ i2c_close($fd);
 
 # Usage PHP
 The package also contains a php wrapper class for i2c.
+````bin
+$ composer require tasoft/php-i2c-extension
+````
+Please note that the composer installation does not compile the extension!  
+For compilation use the installation guide described before.
+
+Now the same example can be rewritten as:
+```php
+<?php
+use TASoft\Bus\I2C;
+
+$i2c = new I2C(0x48, 1);
+for($e=0;$e<30;$e++) {
+    // Read for 30 times the value between channel AIN_0 and GND, 4.096 V, 128 samples/s
+    $i2c->write16(1, 0xC385);
+    // Wait for conversion completed
+    usleep(9000);
+    $i2c->writeRegister(0);
+    $value = $i2c->read2Bytes();
+
+    printf("Hex: 0x%04x - Int: %d - Float, converted: %f V\n",
+        $value, $value, (float)$value*4.096/32768.0);
+    
+    usleep(500000);
+}
+```
