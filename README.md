@@ -60,3 +60,6 @@ for($e=0;$e<30;$e++) {
 
 i2c_close($fd);
 ```
+
+# Usage PHP
+The package also contains a php wrapper class for i2c.
