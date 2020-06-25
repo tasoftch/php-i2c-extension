@@ -135,4 +135,17 @@ class I2C
 	public function write32(int $register, int $bit32) {
 		return i2c_write($this->deviceStream, $register, [($bit32>>24) & 0xFF, ($bit32>>16) & 0xFF, ($bit32>>8) & 0xFF, $bit32 & 0xFF]);
 	}
+
+	/**
+	 * Interprets a given integer as signed integer using a specific bit depth
+	 *
+	 * @param int $integer
+	 * @param int $bits
+	 * @return int
+	 */
+	public static function convertToSignedInteger(int $integer, int $bits = 16): int {
+		$div = 1<<($bits-1);
+		$mask = $div-1;
+		return ($integer > $mask) ? -$div+($integer&$mask) : $integer;
+	}
 }
