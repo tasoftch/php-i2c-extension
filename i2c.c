@@ -62,8 +62,8 @@ static void _i2c_resource_destructor(zend_resource *rsrc)
 // this function will be made available to PHP
 // and prints to PHP stdout using printf
 PHP_FUNCTION(i2c_open) {
-    char *devPath;
-    int length;
+    char *devPath = NULL;
+    size_t length = 0;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &devPath, &length) != SUCCESS) {
           return;
