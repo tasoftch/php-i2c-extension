@@ -12,6 +12,8 @@ class I2C
 {
 	/** @var resource */
 	private $deviceStream;
+	/** @var int */
+	private $address;
 
 	/**
 	 * I2C constructor.
@@ -25,6 +27,7 @@ class I2C
 			i2c_select($this->deviceStream, $address);
 		if(!$this->deviceStream)
 			throw new RuntimeException("Could not open i2c bus");
+		$this->address = $address;
 	}
 
 	/**
@@ -147,5 +150,13 @@ class I2C
 		$div = 1<<($bits-1);
 		$mask = $div-1;
 		return ($integer > $mask) ? -$div+($integer&$mask) : $integer;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getAddress(): int
+	{
+		return $this->address;
 	}
 }
