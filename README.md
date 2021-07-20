@@ -7,7 +7,7 @@ $ cd ~
 $ git clone https://github.com/tasoftch/php-i2c-extension.git
 $ cd php-i2c-extension
 $ phpize
-$ ./configure --enable-i2c-php
+$ ./configure --enable-php-i2c
 $ make
 $ sudo make install
 ```
