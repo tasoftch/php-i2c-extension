@@ -10,10 +10,15 @@ use RuntimeException;
  */
 class I2C
 {
+	const LITTLE_ENDIAN_ENCODING = 1;
+	const BIG_ENDIAN_ENCODING = 2;
+
 	/** @var resource */
 	private $deviceStream;
 	/** @var int */
 	private $address;
+
+	private $byteEncoding = self::BIG_ENDIAN_ENCODING;
 
 	/**
 	 * I2C constructor.
@@ -80,7 +85,10 @@ class I2C
 	 */
 	public function read2Bytes() {
 		$this->checkDev();
-		@ list($b1, $b2) = i2c_read($this->deviceStream, 2);
+		if($this->byteEncoding == self::LITTLE_ENDIAN_ENCODING)
+			@ list($b2, $b1) = i2c_read($this->deviceStream, 2);
+		else
+			@ list($b1, $b2) = i2c_read($this->deviceStream, 2);
 		return ($b1 << 8) | $b2;
 	}
 
@@ -91,7 +99,10 @@ class I2C
 	 */
 	public function read4Bytes() {
 		$this->checkDev();
-		@ list($b1, $b2, $b3, $b4) = i2c_read($this->deviceStream, 4);
+		if($this->byteEncoding == self::LITTLE_ENDIAN_ENCODING)
+			@ list($b4, $b3, $b2, $b1) = i2c_read($this->deviceStream, 4);
+		else
+			@ list($b1, $b2, $b3, $b4) = i2c_read($this->deviceStream, 4);
 		return ($b1 << 24) | ($b2 << 16) | ($b3 << 8) | $b4;
 	}
 
@@ -125,6 +136,8 @@ class I2C
 	 * @return bool
 	 */
 	public function write16(int $register, int $bit16) {
+		if($this->byteEncoding == self::LITTLE_ENDIAN_ENCODING)
+			return i2c_write($this->deviceStream, $register, [$bit16 & 0xFF, ($bit16>>8) & 0xFF]);
 		return i2c_write($this->deviceStream, $register, [($bit16>>8) & 0xFF, $bit16 & 0xFF]);
 	}
 
@@ -136,6 +149,8 @@ class I2C
 	 * @return bool
 	 */
 	public function write32(int $register, int $bit32) {
+		if($this->byteEncoding == self::LITTLE_ENDIAN_ENCODING)
+			return i2c_write($this->deviceStream, $register, [$bit32 & 0xFF, ($bit32>>8) & 0xFF, ($bit32>>16) & 0xFF, ($bit32>>24) & 0xFF]);
 		return i2c_write($this->deviceStream, $register, [($bit32>>24) & 0xFF, ($bit32>>16) & 0xFF, ($bit32>>8) & 0xFF, $bit32 & 0xFF]);
 	}
 
@@ -158,5 +173,23 @@ class I2C
 	public function getAddress(): int
 	{
 		return $this->address;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getByteEncoding(): int
+	{
+		return $this->byteEncoding;
+	}
+
+	/**
+	 * @param int $byteEncoding
+	 * @return I2C
+	 */
+	public function setByteEncoding(int $byteEncoding): I2C
+	{
+		$this->byteEncoding = $byteEncoding;
+		return $this;
 	}
 }
