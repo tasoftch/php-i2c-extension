@@ -93,6 +93,20 @@ class I2C
 	}
 
 	/**
+	 * Reads 3 bytes or 24 bits from i2c bus
+	 *
+	 * @return int
+	 */
+	public function read3Bytes() {
+		$this->checkDev();
+		if($this->byteEncoding == self::LITTLE_ENDIAN_ENCODING)
+			@ list($b3, $b2, $b1) = i2c_read($this->deviceStream, 3);
+		else
+			@ list($b1, $b2, $b3) = i2c_read($this->deviceStream, 3);
+		return ($b1 << 16) | ($b2 << 8) | $b3;
+	}
+
+	/**
 	 * Reads 4 bytes or 32 bits from i2c bus
 	 *
 	 * @return int
@@ -129,13 +143,23 @@ class I2C
 	}
 
 	/**
+	 * Writes one byte to a specified register
+	 *
+	 * @param int $register
+	 * @param int $byte
+	 */
+	public function writeByte(int $register, int $byte) {
+		$this->write($register, [$byte]);
+	}
+
+	/**
 	 * Writes 2 bytes to the specified register on the connected chip
 	 *
 	 * @param int $register
 	 * @param int $bit16
 	 * @return bool
 	 */
-	public function write16(int $register, int $bit16) {
+	public function write2Bytes(int $register, int $bit16) {
 		if($this->byteEncoding == self::LITTLE_ENDIAN_ENCODING)
 			return i2c_write($this->deviceStream, $register, [$bit16 & 0xFF, ($bit16>>8) & 0xFF]);
 		return i2c_write($this->deviceStream, $register, [($bit16>>8) & 0xFF, $bit16 & 0xFF]);
@@ -148,10 +172,54 @@ class I2C
 	 * @param int $bit32
 	 * @return bool
 	 */
-	public function write32(int $register, int $bit32) {
+	public function write4Bytes(int $register, int $bit32) {
 		if($this->byteEncoding == self::LITTLE_ENDIAN_ENCODING)
 			return i2c_write($this->deviceStream, $register, [$bit32 & 0xFF, ($bit32>>8) & 0xFF, ($bit32>>16) & 0xFF, ($bit32>>24) & 0xFF]);
 		return i2c_write($this->deviceStream, $register, [($bit32>>24) & 0xFF, ($bit32>>16) & 0xFF, ($bit32>>8) & 0xFF, $bit32 & 0xFF]);
+	}
+
+	/**
+	 * Reads one byte from a specified register
+	 *
+	 * @param int $register
+	 * @return int
+	 */
+	public function readRegister(int $register): int {
+		$this->writeRegister($register);
+		return $this->readByte();
+	}
+
+	/**
+	 * Reads two bytes from a specified register
+	 *
+	 * @param int $register
+	 * @return int
+	 */
+	public function readRegister16(int $register): int {
+		$this->writeRegister($register);
+		return $this->read2Bytes();
+	}
+
+	/**
+	 * Reads three bytes from a specified register
+	 *
+	 * @param int $register
+	 * @return int
+	 */
+	public function readRegister24(int $register): int {
+		$this->writeRegister($register);
+		return $this->read3Bytes();
+	}
+
+	/**
+	 * Reads four bytes from a specified register
+	 *
+	 * @param int $register
+	 * @return int
+	 */
+	public function readRegister32(int $register): int {
+		$this->writeRegister($register);
+		return $this->read4Bytes();
 	}
 
 	/**
