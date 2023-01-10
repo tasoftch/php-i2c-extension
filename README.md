@@ -1,4 +1,5 @@
-# php i2c extension
+# The PHP i2c Extension
+
 I've created this extension to get access to the i2c bus on my raspberry pi.
 
 ## Note
@@ -9,7 +10,7 @@ This module will not work with PHP 8.0 or above.
 
 - The development module for your version of PHP, i.e, _php7.4-dev_.
 
-### Installation
+## Installation
 
 Change the configure file on line 5 (_php-config7.4_), to match your installed version of PHP.
 Then, run the following commands to install the extension.
@@ -23,7 +24,8 @@ $ ./configure --with-php-config=/usr/bin/php-config7.4 --enable-php-i2c
 $ make
 $ sudo make install
 ```
-Next find the location of PHP's INI files on your computer by running the following command.
+
+Next, find the location of PHP's INI files on your computer by running the following command.
 
 ```bin
 $ php --ini | grep -i "Configuration File.*Path"
@@ -41,7 +43,6 @@ extension=php_i2c
 
 Then, with the file created, test that the I2C extension is loaded by running the following command:
 
-```extension=php_i2c```
 ```bash
 php --ri php_i2c
 ```
@@ -55,22 +56,26 @@ php_i2c
 Version => 0.8.0
 ```
 
-### Usage
+## Usage
+
 The extension adds five function to the global scope:
-1. ```i2c_open```
-    This opens the device bus.
-1. ```i2c_select```
-    This selects an address of a connected chip.
-1. ```i2c_read```
-    Reads data from the i2c bus.
-1. ```i2c_write```
-    Writes data to the i2c bus
-1. ```i2c_close```
-    Closes the bus.
+
+1. `i2c_open`
+   This opens the device bus.
+1. `i2c_select`
+   This selects an address of a connected chip.
+1. `i2c_read`
+   Reads data from the i2c bus.
+1. `i2c_write`
+   Writes data to the i2c bus.
+1. `i2c_close`
+   Closes the bus.
 
 ### Example
+
 I've tested with a Raspberry Pi Model B 3+ and the Adafruit ADS1115 analog to digital converter.
 It's default i2c address is 0x48.
+
 ```php
 <?php
 $fd = i2c_open("/dev/i2c-1");
@@ -94,15 +99,19 @@ for($e=0;$e<30;$e++) {
 i2c_close($fd);
 ```
 
-# Usage PHP
+## Usage PHP
+
 The package also contains a php wrapper class for i2c.
-````bin
+
+```bin
 $ composer require tasoft/php-i2c-extension
-````
+```
+
 Please note that the composer installation does not compile the extension!
 For compilation use the installation guide described before.
 
 Now the same example can be rewritten as:
+
 ```php
 <?php
 use TASoft\Bus\I2C;
