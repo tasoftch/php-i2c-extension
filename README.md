@@ -30,10 +30,10 @@ The extension adds five function to the global scope:
     This opens the device bus.
 1. ```i2c_select```  
     This selects an address of a connected chip.
-1. ```i2c_read```  
+1. ```i2c_read``` ```i2c_read_byte``` ```i2c_read_2_bytes``` ```i2c_read_3_bytes``` ```i2c_read_4_bytes```      
     Reads data from the i2c bus.
-1. ```i2c_write```  
-    Writes data to the i2c bus
+1. ```i2c_write``` ```i2c_write_byte``` ```i2c_write_2_bytes``` ```i2c_write_3_bytes``` ```i2c_write_4_bytes```  
+   Writes data to the i2c bus
 1. ```i2c_close```  
     Closes the bus.
     
@@ -48,6 +48,9 @@ i2c_select($fd, 0x48);
 for($e=0;$e<30;$e++) {
     // Read for 30 times the value between channel AIN_0 and GND, 4.096 V, 128 samples/s
     i2c_write($fd, 1, [0xc3, 0x85]);
+    // or
+    // i2c_write_2_bytes( 0x01c385 );
+    
     // Wait for conversion completed
     usleep(9000);
     i2c_write($fd, 0);

@@ -10,24 +10,22 @@ use RuntimeException;
  */
 class I2C
 {
-	const LITTLE_ENDIAN_ENCODING = 1;
-	const BIG_ENDIAN_ENCODING = 2;
+	const LITTLE_ENDIAN_ENCODING = PHP_I2C_ENDOCING_LITTLE_ENDIAN;
+	const BIG_ENDIAN_ENCODING = PHP_I2C_ENDOCING_BIG_ENDIAN;
 
 	/** @var resource */
 	private $deviceStream;
 	/** @var int */
 	private $address;
 
-	private $byteEncoding = self::BIG_ENDIAN_ENCODING;
-
 	/**
 	 * I2C constructor.
 	 * @param int $address
 	 * @param int $bus
 	 */
-	public function __construct(int $address, int $bus = 1)
+	public function __construct(int $address, int $bus = 1, int $encoding = self::BIG_ENDIAN_ENCODING)
 	{
-		$this->deviceStream = i2c_open("/dev/i2c-$bus");
+		$this->deviceStream = i2c_open("/dev/i2c-$bus", $encoding);
 		if($this->deviceStream)
 			i2c_select($this->deviceStream, $address);
 		if(!$this->deviceStream)
@@ -75,7 +73,7 @@ class I2C
 	 */
 	public function readByte() {
 		$this->checkDev();
-		return i2c_read($this->deviceStream, 1) [0] ?? 0;
+		return i2c_read_byte($this->deviceStream);
 	}
 
 	/**
@@ -85,11 +83,7 @@ class I2C
 	 */
 	public function read2Bytes() {
 		$this->checkDev();
-		if($this->byteEncoding == self::LITTLE_ENDIAN_ENCODING)
-			@ list($b2, $b1) = i2c_read($this->deviceStream, 2);
-		else
-			@ list($b1, $b2) = i2c_read($this->deviceStream, 2);
-		return ($b1 << 8) | $b2;
+		return i2c_read_2_bytes($this->deviceStream);
 	}
 
 	/**
@@ -99,11 +93,7 @@ class I2C
 	 */
 	public function read3Bytes() {
 		$this->checkDev();
-		if($this->byteEncoding == self::LITTLE_ENDIAN_ENCODING)
-			@ list($b3, $b2, $b1) = i2c_read($this->deviceStream, 3);
-		else
-			@ list($b1, $b2, $b3) = i2c_read($this->deviceStream, 3);
-		return ($b1 << 16) | ($b2 << 8) | $b3;
+		return i2c_read_3_bytes($this->deviceStream);
 	}
 
 	/**
@@ -113,11 +103,7 @@ class I2C
 	 */
 	public function read4Bytes() {
 		$this->checkDev();
-		if($this->byteEncoding == self::LITTLE_ENDIAN_ENCODING)
-			@ list($b4, $b3, $b2, $b1) = i2c_read($this->deviceStream, 4);
-		else
-			@ list($b1, $b2, $b3, $b4) = i2c_read($this->deviceStream, 4);
-		return ($b1 << 24) | ($b2 << 16) | ($b3 << 8) | $b4;
+		return i2c_read_4_bytes($this->deviceStream);
 	}
 
 	/**
@@ -127,7 +113,8 @@ class I2C
 	 * @param array $bytes
 	 * @return bool
 	 */
-	public function write(int $register, array $bytes) {
+	public function write(int $register, array $bytes): bool
+	{
 		$this->checkDev();
 		return i2c_write($this->deviceStream, $register, $bytes);
 	}
@@ -138,8 +125,9 @@ class I2C
 	 * @param int $register
 	 * @return bool
 	 */
-	public function writeRegister(int $register) {
-		return i2c_write($this->deviceStream, $register);
+	public function writeRegister(int $register): bool
+	{
+		return i2c_write_register($this->deviceStream, $register);
 	}
 
 	/**
@@ -147,9 +135,11 @@ class I2C
 	 *
 	 * @param int $register
 	 * @param int $byte
+	 * @return bool
 	 */
-	public function writeByte(int $register, int $byte) {
-		$this->write($register, [$byte]);
+	public function writeByte(int $register, int $byte): bool
+	{
+		return i2c_write_byte($this->deviceStream, $register, $byte);
 	}
 
 	/**
@@ -159,10 +149,9 @@ class I2C
 	 * @param int $bit16
 	 * @return bool
 	 */
-	public function write2Bytes(int $register, int $bit16) {
-		if($this->byteEncoding == self::LITTLE_ENDIAN_ENCODING)
-			return i2c_write($this->deviceStream, $register, [$bit16 & 0xFF, ($bit16>>8) & 0xFF]);
-		return i2c_write($this->deviceStream, $register, [($bit16>>8) & 0xFF, $bit16 & 0xFF]);
+	public function write2Bytes(int $register, int $bit16): bool
+	{
+		return i2c_write_2_bytes($this->deviceStream, $register, $bit16);
 	}
 
 	/**
@@ -172,10 +161,9 @@ class I2C
 	 * @param int $bit32
 	 * @return bool
 	 */
-	public function write4Bytes(int $register, int $bit32) {
-		if($this->byteEncoding == self::LITTLE_ENDIAN_ENCODING)
-			return i2c_write($this->deviceStream, $register, [$bit32 & 0xFF, ($bit32>>8) & 0xFF, ($bit32>>16) & 0xFF, ($bit32>>24) & 0xFF]);
-		return i2c_write($this->deviceStream, $register, [($bit32>>24) & 0xFF, ($bit32>>16) & 0xFF, ($bit32>>8) & 0xFF, $bit32 & 0xFF]);
+	public function write4Bytes(int $register, int $bit32): bool
+	{
+		return i2c_write_byte($this->deviceStream, $register, $bit32);
 	}
 
 	/**
@@ -245,19 +233,20 @@ class I2C
 
 	/**
 	 * @return int
+	 * @deprecated
 	 */
 	public function getByteEncoding(): int
 	{
-		return $this->byteEncoding;
+		return -1;
 	}
 
 	/**
 	 * @param int $byteEncoding
 	 * @return I2C
+	 * @deprecated
 	 */
 	public function setByteEncoding(int $byteEncoding): I2C
 	{
-		$this->byteEncoding = $byteEncoding;
 		return $this;
 	}
 }
