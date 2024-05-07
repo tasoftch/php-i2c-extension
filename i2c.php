@@ -28,14 +28,18 @@
  * You must not include this file in your application because the extension defines this functions.
  */
 
+const PHP_I2C_ENDOCING_LITTLE_ENDIAN = 1;
+const PHP_I2C_ENDOCING_BIG_ENDIAN = 2;
+
 /**
  * Opens the device
  * Usually "/dev/i2c-0", "/dev/i2c-1" or "/dev/i2c-2"
  *
  * @param string $deviceName
+ * @param int $encoding
  * @return bool|resource
  */
-function i2c_open($deviceName) {}
+function i2c_open(string $deviceName, int $encoding = PHP_I2C_ENDOCING_BIG_ENDIAN) {}
 
 /**
  * Closes the device pointer
@@ -52,16 +56,93 @@ function i2c_close($device) {}
  * @param int $address
  * @return bool
  */
-function i2c_select($device, $address) {}
+function i2c_select($device, int $address) {}
 
 /**
- * Reads $length bytes from i2c bus
+ * Reads a single byte from the device
  *
  * @param resource $device
- * @param int $length
- * @return array
+ * @return int
  */
-function i2c_read($device, $length) {}
+function i2c_read_byte($device): int {}
+
+/**
+ * Reads two bytes from the device
+ *
+ * @param resource $device
+ * @return int
+ */
+function i2c_read_2_bytes($device): int {}
+
+/**
+ * Reads three bytes byte from the device
+ *
+ * @param resource $device
+ * @return int
+ */
+function i2c_read_3_bytes($device): int {}
+
+/**
+ * Reads four bytes from the device
+ *
+ * @param resource $device
+ * @return int
+ */
+function i2c_read_4_bytes($device): int {}
+
+/**
+ * Writes one byte to the bus.
+ * Please note that the $data is truncated to 0 - 255.
+ *
+ * @param resource $device
+ * @param int $register
+ * @return bool
+ */
+function i2c_write_register($device, int $register): bool {}
+
+/**
+ * Writes one byte to the bus.
+ * Please note that the $data is truncated to 0 - 255.
+ *
+ * @param resource $device
+ * @param int $register
+ * @param int $data
+ * @return bool
+ */
+function i2c_write_byte($device, int $register, int $data): bool {}
+
+/**
+ * Writes one byte to the bus.
+ * Please note that the $data is truncated to 0 - 65535.
+ *
+ * @param resource $device
+ * @param int $register
+ * @param int $data
+ * @return bool
+ */
+function i2c_write_2_bytes($device, int $register, int $data): bool {}
+
+/**
+ * Writes one byte to the bus.
+ * Please note that the $data is truncated to 0 - 16777215.
+ *
+ * @param resource $device
+ * @param int $register
+ * @param int $data
+ * @return bool
+ */
+function i2c_write_3_bytes($device, int $register, int $data): bool {}
+
+/**
+ * Writes one byte to the bus.
+ * Please note that the $data is truncated to 0 - 4294967295.
+ *
+ * @param resource $device
+ * @param int $register
+ * @param int $data
+ * @return bool
+ */
+function i2c_write_4_bytes($device, int $register, int $data): bool {}
 
 /**
  * Writes the $bytes into the register.
@@ -72,4 +153,13 @@ function i2c_read($device, $length) {}
  * @param array|null $bytes
  * @return bool
  */
-function i2c_write($device, $register, array $bytes = NULL) {}
+function i2c_write($device, int $register, array $bytes = NULL) {}
+
+/**
+ * Reads $length bytes from i2c bus
+ *
+ * @param resource $device
+ * @param int $length
+ * @return array
+ */
+function i2c_read($device, int $length) {}

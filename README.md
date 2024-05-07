@@ -59,18 +59,17 @@ Version => 0.8.0
 ## Usage
 
 The extension adds five function to the global scope:
-
-1. `i2c_open`
-   This opens the device bus.
-1. `i2c_select`
-   This selects an address of a connected chip.
-1. `i2c_read`
-   Reads data from the i2c bus.
-1. `i2c_write`
-   Writes data to the i2c bus.
-1. `i2c_close`
-   Closes the bus.
-
+1. ```i2c_open```  
+    This opens the device bus.
+1. ```i2c_select```  
+    This selects an address of a connected chip.
+1. ```i2c_read``` ```i2c_read_byte``` ```i2c_read_2_bytes``` ```i2c_read_3_bytes``` ```i2c_read_4_bytes```      
+    Reads data from the i2c bus.
+1. ```i2c_write``` ```i2c_write_byte``` ```i2c_write_2_bytes``` ```i2c_write_3_bytes``` ```i2c_write_4_bytes```  
+   Writes data to the i2c bus
+1. ```i2c_close```  
+    Closes the bus.
+    
 ### Example
 
 I've tested with a Raspberry Pi Model B 3+ and the Adafruit ADS1115 analog to digital converter.
@@ -84,6 +83,9 @@ i2c_select($fd, 0x48);
 for($e=0;$e<30;$e++) {
     // Read for 30 times the value between channel AIN_0 and GND, 4.096 V, 128 samples/s
     i2c_write($fd, 1, [0xc3, 0x85]);
+    // or
+    // i2c_write_2_bytes( 0x01c385 );
+    
     // Wait for conversion completed
     usleep(9000);
     i2c_write($fd, 0);
@@ -122,8 +124,7 @@ for($e=0;$e<30;$e++) {
     $i2c->write16(1, 0xC385);
     // Wait for conversion completed
     usleep(9000);
-    $i2c->writeRegister(0);
-    $value = $i2c->read2Bytes();
+    $value = $i2c->readRegister16(1);
 
     printf("Hex: 0x%04x - Int: %d - Float, converted: %f V\n",
         $value, $value, (float)$value*4.096/32768.0);
