@@ -2,13 +2,10 @@
 
 I've created this extension to get access to the i2c bus on my raspberry pi.
 
-## Note
-
-This module will not work with PHP 8.0 or above.
 
 ## Prerequisites
 
-- The development module for your version of PHP, i.e, _php7.4-dev_.
+- The development module for your version of PHP, i.e, _php7.4-dev_, _php8.2-dev_.
 
 ## Installation
 
