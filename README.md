@@ -85,8 +85,7 @@ for($e=0;$e<30;$e++) {
     $i2c->write16(1, 0xC385);
     // Wait for conversion completed
     usleep(9000);
-    $i2c->writeRegister(0);
-    $value = $i2c->read2Bytes();
+    $value = $i2c->readRegister16(1);
 
     printf("Hex: 0x%04x - Int: %d - Float, converted: %f V\n",
         $value, $value, (float)$value*4.096/32768.0);
