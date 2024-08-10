@@ -155,6 +155,18 @@ class I2C
 	}
 
 	/**
+	 * Writes 3 bytes to the specified register on the connected chip.
+	 *
+	 * @param int $register
+	 * @param int $bit32
+	 * @return bool
+	 */
+	public function write3Bytes(int $register, int $bit24): bool
+	{
+		return i2c_write_3_bytes($this->deviceStream, $register, $bit24);
+	}
+
+	/**
 	 * Writes 4 bytes to the specified register on the connected chip.
 	 *
 	 * @param int $register
@@ -163,7 +175,7 @@ class I2C
 	 */
 	public function write4Bytes(int $register, int $bit32): bool
 	{
-		return i2c_write_byte($this->deviceStream, $register, $bit32);
+		return i2c_write_4_bytes($this->deviceStream, $register, $bit32);
 	}
 
 	/**
